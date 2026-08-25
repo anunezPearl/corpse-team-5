@@ -48,6 +48,15 @@ npm test
 - Two-stage UI flow: Stage 1 (Encode) takes political manifesto text and produces emojis; Stage 2 (Decode) extracts the hidden meaning. All localStorage, no server-side storage.
 - Example: input "We will be free" → encodes to "🔗 🕊️ 💨" (chains, dove, wind) → decodes to "I long for freedom and escape."
 
+## Changes in round 3
+
+**Tone: playful and unhinged, with a Disney needle drop.**
+
+- Rewrote `DECODE_PROMPT` so the "hidden truth" comes back gleeful and over-the-top instead of somber, and works in a quote from a Disney character whenever it can make one fit.
+- Bumped the decode response's token budget (80 → 140) so the reveal has room for the extra flair.
+- Encoding is unchanged — only how the decoded message reads is different now.
+- Example: input "We will be free" → still encodes to "🔗 🕊️ 💨" → now decodes to something like "Let it go, comrade — those chains were never gonna hold you, hakuna matata style!"
+
 ## Next up
 
 - Multiplayer mode: two users submit text, race to encode/decode each other's messages correctly.
