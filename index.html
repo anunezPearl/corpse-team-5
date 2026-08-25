@@ -1,26 +1,251 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <title>ALL CAPS DRAMA Converter</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Say It in Emoji</title>
   <style>
-    body { font-family: sans-serif; max-width: 500px; margin: 60px auto; text-align: center; }
-    input { font-size: 1.2rem; padding: 8px; width: 250px; }
-    button { font-size: 1.2rem; padding: 8px 16px; }
+    :root {
+      color-scheme: light;
+      --ink: #20152f;
+      --muted: #6f6479;
+      --surface: rgba(255, 255, 255, 0.88);
+      --purple: #7657ff;
+      --pink: #ed5f9a;
+      --border: rgba(83, 59, 120, 0.16);
+      --shadow: 0 24px 70px rgba(67, 38, 98, 0.17);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 28px 18px;
+      display: grid;
+      place-items: center;
+      font-family: Inter, ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 10%, #ffd4e7 0, transparent 34%),
+        radial-gradient(circle at 90% 15%, #d9d3ff 0, transparent 35%),
+        linear-gradient(145deg, #fff8ee, #f2efff 55%, #eefcff);
+    }
+
+    main {
+      width: min(100%, 620px);
+      padding: clamp(26px, 6vw, 48px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      font-weight: 800;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      color: var(--purple);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 8vw, 4.1rem);
+      line-height: 0.98;
+      letter-spacing: -0.06em;
+    }
+
+    .subtitle {
+      margin: 18px 0 28px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.55;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 9px;
+      font-weight: 750;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 132px;
+      resize: vertical;
+      padding: 16px 18px;
+      color: var(--ink);
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      outline: none;
+      font: inherit;
+      font-size: 1.05rem;
+      line-height: 1.5;
+      transition: border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    textarea:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 5px rgba(118, 87, 255, 0.13);
+    }
+
+    .form-meta {
+      min-height: 20px;
+      margin: 7px 2px 14px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px 22px;
+      border: 0;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(105deg, var(--purple), var(--pink));
+      box-shadow: 0 12px 28px rgba(118, 87, 255, 0.27);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 800;
+      transition: transform 150ms ease, opacity 150ms ease;
+    }
+
+    button:hover:not(:disabled) { transform: translateY(-2px); }
+    button:active:not(:disabled) { transform: translateY(0); }
+    button:disabled { cursor: wait; opacity: 0.65; }
+
+    .result {
+      min-height: 116px;
+      margin-top: 24px;
+      padding: 22px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background: rgba(118, 87, 255, 0.06);
+      border: 1px dashed var(--border);
+      border-radius: 20px;
+    }
+
+    #output {
+      font-size: clamp(2.3rem, 9vw, 4.4rem);
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    #status { color: var(--muted); }
+    #status.error { color: #aa244f; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
   </style>
 </head>
 <body>
-  <h1>ALL CAPS DRAMA Converter</h1>
-  <p>Type something to dramatize.</p>
-  <input id="textInput" type="text" placeholder="Type here" />
-  <button onclick="dramatize()">DRAMATIZE</button>
-  <div id="output" style="margin-top: 20px; font-weight: bold;"></div>
+  <main>
+    <p class="eyebrow">Words → symbols</p>
+    <h1>Say it in emoji.</h1>
+    <p class="subtitle">Enter a word or sentence. AI will turn its meaning into a compact emoji story.</p>
+
+    <form id="emojiForm">
+      <label for="textInput">What do you want to translate?</label>
+      <textarea id="textInput" maxlength="1000" placeholder="For example: I love you" required></textarea>
+      <div class="form-meta">
+        <span>Ctrl/⌘ + Enter to translate</span>
+        <span id="characterCount">0 / 1000</span>
+      </div>
+      <button id="translateButton" type="submit">Translate to emoji ✨</button>
+    </form>
+
+    <section class="result" aria-live="polite" aria-busy="false">
+      <div id="status">Your emoji translation will appear here.</div>
+      <div id="output" hidden></div>
+    </section>
+  </main>
 
   <script>
-    function dramatize() {
-      const val = document.getElementById('textInput').value;
-      document.getElementById('output').innerText = val.toUpperCase();
-      // Works minimally already! Build me further — add exclamation points, random drama words, etc.
+    const form = document.getElementById('emojiForm');
+    const input = document.getElementById('textInput');
+    const button = document.getElementById('translateButton');
+    const result = document.querySelector('.result');
+    const status = document.getElementById('status');
+    const output = document.getElementById('output');
+    const characterCount = document.getElementById('characterCount');
+    let activeRequest;
+
+    function setLoading(isLoading) {
+      button.disabled = isLoading;
+      button.textContent = isLoading ? 'Translating…' : 'Translate to emoji ✨';
+      result.setAttribute('aria-busy', String(isLoading));
     }
+
+    function showStatus(message, isError = false) {
+      output.hidden = true;
+      output.textContent = '';
+      status.hidden = false;
+      status.textContent = message;
+      status.classList.toggle('error', isError);
+    }
+
+    function showEmojis(emojis) {
+      status.hidden = true;
+      status.classList.remove('error');
+      output.textContent = emojis;
+      output.hidden = false;
+    }
+
+    async function translate() {
+      const text = input.value.trim();
+      if (!text) {
+        showStatus('Enter a word or sentence first.', true);
+        input.focus();
+        return;
+      }
+
+      activeRequest?.abort();
+      const controller = new AbortController();
+      activeRequest = controller;
+      setLoading(true);
+      showStatus('Finding the right emojis…');
+
+      try {
+        const response = await fetch('/api/emojify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+          signal: controller.signal
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Translation failed. Please try again.');
+        showEmojis(data.emojis);
+      } catch (error) {
+        if (error.name !== 'AbortError') showStatus(error.message, true);
+      } finally {
+        if (activeRequest === controller) {
+          activeRequest = undefined;
+          setLoading(false);
+        }
+      }
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      translate();
+    });
+
+    input.addEventListener('input', () => {
+      characterCount.textContent = `${input.value.length} / 1000`;
+    });
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
+    });
   </script>
 </body>
 </html>
