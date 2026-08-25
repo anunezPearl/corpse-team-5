@@ -1,251 +1,631 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Say It in Emoji</title>
-  <style>
-    :root {
-      color-scheme: light;
-      --ink: #20152f;
-      --muted: #6f6479;
-      --surface: rgba(255, 255, 255, 0.88);
-      --purple: #7657ff;
-      --pink: #ed5f9a;
-      --border: rgba(83, 59, 120, 0.16);
-      --shadow: 0 24px 70px rgba(67, 38, 98, 0.17);
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Emoji Gulag — The Warden's Interceptor</title>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-main: #0d0d0d;
+    --bg-panel: #1a1a1a;
+    --bg-log: #0f0f0f;
+    --border-dark: #2a2a2a;
+    --border-red: #8b2e2e;
+    --text-main: #e0e0e0;
+    --text-muted: #999;
+    --text-warn: #ffcc00;
+    --red-stamp: #d73f3f;
+    --red-glow: rgba(215, 63, 63, 0.3);
+  }
 
-    * { box-sizing: border-box; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
 
-    body {
-      min-height: 100vh;
-      margin: 0;
-      padding: 28px 18px;
-      display: grid;
-      place-items: center;
-      font-family: Inter, ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at 10% 10%, #ffd4e7 0, transparent 34%),
-        radial-gradient(circle at 90% 15%, #d9d3ff 0, transparent 35%),
-        linear-gradient(145deg, #fff8ee, #f2efff 55%, #eefcff);
-    }
+  body {
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    display: flex;
+    min-height: 100vh;
+  }
 
-    main {
-      width: min(100%, 620px);
-      padding: clamp(26px, 6vw, 48px);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 30px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(14px);
-    }
+  /* Left column: warden's log */
+  .log-panel {
+    width: 280px;
+    background: var(--bg-log);
+    border-right: 2px solid var(--border-dark);
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
 
-    .eyebrow {
-      margin: 0 0 8px;
-      font-weight: 800;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
-      color: var(--purple);
-    }
+  .log-header {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--text-warn);
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-red);
+    padding-bottom: 8px;
+  }
 
-    h1 {
-      margin: 0;
-      font-size: clamp(2.2rem, 8vw, 4.1rem);
-      line-height: 0.98;
-      letter-spacing: -0.06em;
-    }
+  .log-entries {
+    font-size: 12px;
+  }
 
-    .subtitle {
-      margin: 18px 0 28px;
-      color: var(--muted);
-      font-size: 1.05rem;
-      line-height: 1.55;
-    }
+  .log-entry {
+    padding: 8px;
+    margin-bottom: 8px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dark);
+    border-radius: 3px;
+  }
 
-    label {
-      display: block;
-      margin-bottom: 9px;
-      font-weight: 750;
-    }
+  .log-entry-text {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    word-break: break-word;
+  }
 
-    textarea {
-      width: 100%;
-      min-height: 132px;
-      resize: vertical;
-      padding: 16px 18px;
-      color: var(--ink);
-      background: #fff;
-      border: 2px solid var(--border);
-      border-radius: 18px;
-      outline: none;
-      font: inherit;
-      font-size: 1.05rem;
-      line-height: 1.5;
-      transition: border-color 160ms ease, box-shadow 160ms ease;
-    }
+  .log-entry-emoji {
+    font-size: 13px;
+    line-height: 1.3;
+    color: #fff;
+    margin-bottom: 3px;
+  }
 
-    textarea:focus {
-      border-color: var(--purple);
-      box-shadow: 0 0 0 5px rgba(118, 87, 255, 0.13);
-    }
+  .log-entry-decoded {
+    font-size: 10px;
+    color: var(--text-warn);
+    font-style: italic;
+    border-top: 1px solid var(--border-dark);
+    padding-top: 4px;
+    margin-top: 4px;
+  }
 
-    .form-meta {
-      min-height: 20px;
-      margin: 7px 2px 14px;
-      display: flex;
-      justify-content: space-between;
-      color: var(--muted);
-      font-size: 0.82rem;
-    }
+  .clear-log {
+    width: 100%;
+    padding: 6px;
+    margin-top: 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dark);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+  }
+  .clear-log:hover { color: var(--text-main); border-color: #555; }
 
-    button {
-      width: 100%;
-      padding: 14px 22px;
-      border: 0;
-      border-radius: 999px;
-      color: #fff;
-      background: linear-gradient(105deg, var(--purple), var(--pink));
-      box-shadow: 0 12px 28px rgba(118, 87, 255, 0.27);
-      cursor: pointer;
-      font: inherit;
-      font-weight: 800;
-      transition: transform 150ms ease, opacity 150ms ease;
-    }
+  /* Right column: main interface */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 40px;
+    position: relative;
+  }
 
-    button:hover:not(:disabled) { transform: translateY(-2px); }
-    button:active:not(:disabled) { transform: translateY(0); }
-    button:disabled { cursor: wait; opacity: 0.65; }
+  .title-block {
+    margin-bottom: 30px;
+  }
 
-    .result {
-      min-height: 116px;
-      margin-top: 24px;
-      padding: 22px;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      background: rgba(118, 87, 255, 0.06);
-      border: 1px dashed var(--border);
-      border-radius: 20px;
-    }
+  .title-block h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2em;
+    margin: 0;
+    color: var(--red-stamp);
+    text-shadow: 0 0 8px var(--red-glow);
+    letter-spacing: 0.03em;
+  }
 
-    #output {
-      font-size: clamp(2.3rem, 9vw, 4.4rem);
-      line-height: 1.35;
-      overflow-wrap: anywhere;
-    }
+  .title-block .subtitle {
+    color: var(--text-muted);
+    font-size: 0.85em;
+    margin-top: 4px;
+    font-style: italic;
+  }
 
-    #status { color: var(--muted); }
-    #status.error { color: #aa244f; }
+  /* Surveillance indicator */
+  .surveillance {
+    position: absolute;
+    top: 20px;
+    right: 40px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
 
-    @media (prefers-reduced-motion: reduce) {
-      * { transition: none !important; }
-    }
-  </style>
+  .surveillance-camera {
+    font-size: 20px;
+    animation: camera-watch 2s ease-in-out infinite;
+  }
+
+  @keyframes camera-watch {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  /* Encoder form */
+  .encoder-section {
+    margin-bottom: 30px;
+  }
+
+  .section-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1em;
+    color: var(--text-warn);
+    margin-bottom: 8px;
+    letter-spacing: 0.08em;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  textarea {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dark);
+    color: var(--text-main);
+    padding: 12px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+    min-height: 80px;
+    resize: vertical;
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: var(--border-red);
+    box-shadow: 0 0 0 2px var(--red-glow);
+  }
+
+  .char-counter {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+  }
+
+  .button-row {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  button {
+    padding: 10px 16px;
+    border: 1px solid var(--border-dark);
+    background: var(--bg-panel);
+    color: var(--text-main);
+    cursor: pointer;
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    transition: all 0.2s ease;
+  }
+
+  button:hover:not(:disabled) {
+    border-color: var(--border-red);
+    box-shadow: 0 0 8px var(--red-glow);
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--red-stamp);
+    border-color: var(--red-stamp);
+    color: #000;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: #ff4444;
+  }
+
+  .btn-secondary {
+    background: transparent;
+  }
+
+  button.loading {
+    animation: pulse 1s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  /* Result display */
+  .result-block {
+    margin-top: 30px;
+  }
+
+  .result-box {
+    background: var(--bg-panel);
+    border: 2px solid var(--border-dark);
+    padding: 20px;
+    min-height: 100px;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+
+  .result-box.success {
+    border-color: var(--border-red);
+    box-shadow: 0 0 12px var(--red-glow);
+  }
+
+  .result-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  .emojis-display {
+    font-size: 2em;
+    line-height: 1.5;
+    word-break: break-word;
+    min-height: 60px;
+  }
+
+  .emojis-display.empty {
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .status-message {
+    font-size: 12px;
+    margin-top: 12px;
+    min-height: 1.5em;
+  }
+
+  .status-message.error {
+    color: #ff6b6b;
+  }
+
+  .status-message.success {
+    color: var(--text-warn);
+  }
+
+  .status-message.loading {
+    color: var(--text-muted);
+  }
+
+  /* Decoder section */
+  .decoder-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid var(--border-dark);
+  }
+
+  .decoded-message {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--bg-panel);
+    border-left: 3px solid var(--text-warn);
+    color: var(--text-warn);
+    font-style: italic;
+    min-height: 1.5em;
+  }
+
+  .decoded-message.empty {
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Stamp overlay */
+  .stamp-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg) scale(0);
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 48px;
+    color: var(--red-stamp);
+    text-shadow: 0 0 20px var(--red-glow);
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0;
+  }
+
+  .stamp-overlay.show {
+    animation: stamp-appear 0.8s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+
+  @keyframes stamp-appear {
+    0% { transform: translate(-50%, -50%) rotate(-15deg) scale(0); opacity: 0; }
+    50% { transform: translate(-50%, -50%) rotate(-15deg) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -50%) rotate(-15deg) scale(1); opacity: 1; }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    body { flex-direction: column; }
+    .log-panel { width: 100%; max-height: none; border-right: none; border-bottom: 2px solid var(--border-dark); }
+    .main { padding: 20px; }
+    .title-block h1 { font-size: 1.6em; }
+    .surveillance { position: static; margin-bottom: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; }
+  }
+</style>
 </head>
 <body>
-  <main>
-    <p class="eyebrow">Words → symbols</p>
-    <h1>Say it in emoji.</h1>
-    <p class="subtitle">Enter a word or sentence. AI will turn its meaning into a compact emoji story.</p>
 
-    <form id="emojiForm">
-      <label for="textInput">What do you want to translate?</label>
-      <textarea id="textInput" maxlength="1000" placeholder="For example: I love you" required></textarea>
-      <div class="form-meta">
-        <span>Ctrl/⌘ + Enter to translate</span>
-        <span id="characterCount">0 / 1000</span>
-      </div>
-      <button id="translateButton" type="submit">Translate to emoji ✨</button>
-    </form>
+<div class="log-panel">
+  <div class="log-header">📋 WARDEN'S LOG</div>
+  <div class="log-entries" id="logEntries"></div>
+  <button class="clear-log" id="clearLogBtn">Clear Log</button>
+</div>
 
-    <section class="result" aria-live="polite" aria-busy="false">
-      <div id="status">Your emoji translation will appear here.</div>
-      <div id="output" hidden></div>
-    </section>
-  </main>
+<div class="main">
+  <div class="surveillance">
+    <span class="surveillance-camera">📹</span>
+    <span>Under observation</span>
+  </div>
 
-  <script>
-    const form = document.getElementById('emojiForm');
-    const input = document.getElementById('textInput');
-    const button = document.getElementById('translateButton');
-    const result = document.querySelector('.result');
-    const status = document.getElementById('status');
-    const output = document.getElementById('output');
-    const characterCount = document.getElementById('characterCount');
-    let activeRequest;
+  <div class="title-block">
+    <h1>EMOJI GULAG</h1>
+    <div class="subtitle">The Warden's Interceptor — Extract Hidden Messages</div>
+  </div>
 
-    function setLoading(isLoading) {
-      button.disabled = isLoading;
-      button.textContent = isLoading ? 'Translating…' : 'Translate to emoji ✨';
-      result.setAttribute('aria-busy', String(isLoading));
+  <div class="encoder-section">
+    <div class="section-label">STAGE 1: ENCODE THE MESSAGE</div>
+    <div class="form-group">
+      <label class="form-label">Political Manifesto (what you really mean)</label>
+      <textarea id="inputText" placeholder="Write what you dare not say aloud…" maxlength="1000"></textarea>
+      <div class="char-counter"><span id="charCount">0</span> / 1000</div>
+    </div>
+    <div class="button-row">
+      <button class="btn-primary" id="encodeBtn">ENCODE MESSAGE</button>
+      <button class="btn-secondary" id="clearInputBtn">Clear</button>
+    </div>
+  </div>
+
+  <div class="result-block">
+    <div class="result-box" id="resultBox">
+      <div class="result-label">INTERCEPTED EMOJI SEQUENCE:</div>
+      <div class="emojis-display empty" id="emojisDisplay">Waiting for input…</div>
+      <div class="status-message" id="statusMessage"></div>
+    </div>
+  </div>
+
+  <div class="decoder-section">
+    <div class="section-label">STAGE 2: DECODE THE TRUTH</div>
+    <p style="color: var(--text-muted); font-size: 12px; margin-top: 0;">
+      The emojis above appear innocent to the censor. What do they really mean?
+    </p>
+    <div class="button-row">
+      <button class="btn-primary" id="decodeBtn" disabled>EXTRACT HIDDEN MESSAGE</button>
+    </div>
+    <div class="decoded-message empty" id="decodedMessage">No message decoded yet.</div>
+    <div class="status-message" id="decodedStatusMessage"></div>
+  </div>
+</div>
+
+<div class="stamp-overlay" id="stampOverlay">INTERCEPTED</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // DOM elements
+  const inputText = document.getElementById('inputText');
+  const charCount = document.getElementById('charCount');
+  const encodeBtn = document.getElementById('encodeBtn');
+  const clearInputBtn = document.getElementById('clearInputBtn');
+  const resultBox = document.getElementById('resultBox');
+  const emojisDisplay = document.getElementById('emojisDisplay');
+  const statusMessage = document.getElementById('statusMessage');
+  const decodeBtn = document.getElementById('decodeBtn');
+  const decodedMessage = document.getElementById('decodedMessage');
+  const decodedStatusMessage = document.getElementById('decodedStatusMessage');
+  const stampOverlay = document.getElementById('stampOverlay');
+  const logEntries = document.getElementById('logEntries');
+  const clearLogBtn = document.getElementById('clearLogBtn');
+
+  // State
+  let currentEmojis = '';
+  let currentText = '';
+
+  // Character counter
+  inputText.addEventListener('input', () => {
+    charCount.textContent = inputText.value.length;
+  });
+
+  // Clear input
+  clearInputBtn.addEventListener('click', () => {
+    inputText.value = '';
+    charCount.textContent = '0';
+  });
+
+  // Encode message
+  encodeBtn.addEventListener('click', async () => {
+    const text = inputText.value.trim();
+    if (!text) {
+      statusMessage.textContent = 'Enter a message first.';
+      statusMessage.className = 'status-message error';
+      return;
     }
 
-    function showStatus(message, isError = false) {
-      output.hidden = true;
-      output.textContent = '';
-      status.hidden = false;
-      status.textContent = message;
-      status.classList.toggle('error', isError);
-    }
+    currentText = text;
+    encodeBtn.disabled = true;
+    encodeBtn.classList.add('loading');
+    statusMessage.textContent = 'Encoding…';
+    statusMessage.className = 'status-message loading';
+    emojisDisplay.textContent = '';
+    decodeBtn.disabled = true;
+    decodedMessage.textContent = 'No message decoded yet.';
+    decodedMessage.className = 'decoded-message empty';
 
-    function showEmojis(emojis) {
-      status.hidden = true;
-      status.classList.remove('error');
-      output.textContent = emojis;
-      output.hidden = false;
-    }
+    try {
+      const res = await fetch('/api/emojify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
 
-    async function translate() {
-      const text = input.value.trim();
-      if (!text) {
-        showStatus('Enter a word or sentence first.', true);
-        input.focus();
+      const data = await res.json();
+
+      if (!res.ok) {
+        statusMessage.textContent = `Error: ${data.error || 'Unknown error'}`;
+        statusMessage.className = 'status-message error';
         return;
       }
 
-      activeRequest?.abort();
-      const controller = new AbortController();
-      activeRequest = controller;
-      setLoading(true);
-      showStatus('Finding the right emojis…');
+      currentEmojis = data.emojis || '';
+      emojisDisplay.textContent = currentEmojis || '(no emojis returned)';
+      emojisDisplay.classList.remove('empty');
+      resultBox.classList.add('success');
+      statusMessage.textContent = 'Message encoded. Ready for decoding.';
+      statusMessage.className = 'status-message success';
+      decodeBtn.disabled = false;
+      showStamp();
+      addLogEntry(text, currentEmojis, '');
+    } catch (err) {
+      statusMessage.textContent = `Error: ${err.message}`;
+      statusMessage.className = 'status-message error';
+    } finally {
+      encodeBtn.disabled = false;
+      encodeBtn.classList.remove('loading');
+    }
+  });
 
-      try {
-        const response = await fetch('/api/emojify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text }),
-          signal: controller.signal
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || 'Translation failed. Please try again.');
-        showEmojis(data.emojis);
-      } catch (error) {
-        if (error.name !== 'AbortError') showStatus(error.message, true);
-      } finally {
-        if (activeRequest === controller) {
-          activeRequest = undefined;
-          setLoading(false);
-        }
-      }
+  // Decode message
+  decodeBtn.addEventListener('click', async () => {
+    if (!currentEmojis) {
+      decodedStatusMessage.textContent = 'Encode a message first.';
+      decodedStatusMessage.className = 'status-message error';
+      return;
     }
 
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      translate();
-    });
+    decodeBtn.disabled = true;
+    decodeBtn.classList.add('loading');
+    decodedStatusMessage.textContent = 'Extracting hidden meaning…';
+    decodedStatusMessage.className = 'status-message loading';
+    decodedMessage.textContent = '';
+    decodedMessage.className = 'decoded-message';
 
-    input.addEventListener('input', () => {
-      characterCount.textContent = `${input.value.length} / 1000`;
-    });
+    try {
+      const res = await fetch('/api/decode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emojis: currentEmojis })
+      });
 
-    input.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
-        event.preventDefault();
-        form.requestSubmit();
+      const data = await res.json();
+
+      if (!res.ok) {
+        decodedStatusMessage.textContent = `Error: ${data.error || 'Unknown error'}`;
+        decodedStatusMessage.className = 'status-message error';
+        return;
       }
-    });
-  </script>
+
+      const decoded = data.message || '';
+      decodedMessage.textContent = decoded;
+      decodedMessage.classList.remove('empty');
+      decodedStatusMessage.textContent = 'Hidden message extracted.';
+      decodedStatusMessage.className = 'status-message success';
+      updateLogEntry(currentText, decoded);
+    } catch (err) {
+      decodedStatusMessage.textContent = `Error: ${err.message}`;
+      decodedStatusMessage.className = 'status-message error';
+    } finally {
+      decodeBtn.disabled = false;
+      decodeBtn.classList.remove('loading');
+    }
+  });
+
+  // Stamp overlay animation
+  function showStamp() {
+    stampOverlay.classList.remove('show');
+    void stampOverlay.offsetWidth; // restart animation
+    stampOverlay.classList.add('show');
+    setTimeout(() => stampOverlay.classList.remove('show'), 1200);
+  }
+
+  // Warden's log (localStorage)
+  function addLogEntry(text, emojis, decoded) {
+    const log = getLog();
+    log.push({ text, emojis, decoded, timestamp: Date.now() });
+    saveLog(log);
+    renderLog(log);
+  }
+
+  function updateLogEntry(text, decoded) {
+    const log = getLog();
+    if (log.length > 0) {
+      log[log.length - 1].decoded = decoded;
+      saveLog(log);
+      renderLog(log);
+    }
+  }
+
+  function getLog() {
+    try {
+      return JSON.parse(localStorage.getItem('emoji_gulag_log')) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveLog(log) {
+    try {
+      localStorage.setItem('emoji_gulag_log', JSON.stringify(log.slice(-50))); // keep last 50
+    } catch { /* localStorage full or unavailable */ }
+  }
+
+  function renderLog(log) {
+    logEntries.innerHTML = log
+      .slice()
+      .reverse()
+      .map((entry) => `
+        <div class="log-entry">
+          <div class="log-entry-text">${escapeHtml(entry.text.slice(0, 50))}</div>
+          <div class="log-entry-emoji">${entry.emojis}</div>
+          ${entry.decoded ? `<div class="log-entry-decoded">"${escapeHtml(entry.decoded.slice(0, 60))}"</div>` : ''}
+        </div>
+      `)
+      .join('');
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  clearLogBtn.addEventListener('click', () => {
+    if (confirm('Clear the entire warden\'s log?')) {
+      localStorage.removeItem('emoji_gulag_log');
+      logEntries.innerHTML = '';
+    }
+  });
+
+  // Initial render
+  renderLog(getLog());
+})();
+</script>
+
 </body>
 </html>

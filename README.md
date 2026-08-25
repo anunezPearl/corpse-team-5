@@ -1,6 +1,6 @@
 # Team 5: Say It in Emoji
 
-Turn any word or sentence into a compact group of emojis using the JustAnswer LiteLLM endpoint. The model is instructed to preserve meaning, order, sentiment, relationships, and negation while returning emojis only.
+Turn any word or sentence into a compact group of emojis — but now with hidden meaning underneath. A dual-layer system where the emojis appear innocent to the censor (the warden), but decode into a slightly different truth that was really meant all along.
 
 ## Run it
 
@@ -34,3 +34,23 @@ npm test
 - Added a Node.js server and `/api/emojify` route so the LiteLLM API key stays off the client.
 - Added a meaning-focused emoji-only prompt, input validation, timeout/error handling, endpoint-path fallback, and Unicode-safe output sanitization.
 - Added offline tests covering complex emoji sequences, proxy URL formats, successful responses, and malformed non-emoji output.
+
+## Changes in round 2
+
+**The Emoji Gulag: dual-layer hidden messages.**
+
+- Added `/api/decode` endpoint: sends emojis to the LLM with a prompt asking "what was really meant by these?" to extract the hidden truth.
+- Redesigned UI as a Soviet watchtower aesthetic: dark theme, typewriter font, surveillance camera indicator (📹), red stamp animation on encode.
+- Added **Warden's Log** sidebar (left panel): localStorage-backed ledger of all encode/decode pairs, showing original text, emojis, and decoded hidden meaning.
+- Rewrote prompts:
+  - **ENCODE_PROMPT** instructs the LLM to hide forbidden meaning in innocent-looking emojis, as if smuggling a message past a censor.
+  - **DECODE_PROMPT** asks the LLM to reverse-engineer what was "really meant" by those emojis, extracting the hidden truth.
+- Two-stage UI flow: Stage 1 (Encode) takes political manifesto text and produces emojis; Stage 2 (Decode) extracts the hidden meaning. All localStorage, no server-side storage.
+- Example: input "We will be free" → encodes to "🔗 🕊️ 💨" (chains, dove, wind) → decodes to "I long for freedom and escape."
+
+## Next up
+
+- Multiplayer mode: two users submit text, race to encode/decode each other's messages correctly.
+- A real historical Gulag archive: real prisoner manifestos with their hidden-meaning encodings.
+- Leaderboard of fastest decoders (persisted server-side).
+- Audio: Shostakovich motif plays when a message is successfully intercepted (same system as Team 4).
